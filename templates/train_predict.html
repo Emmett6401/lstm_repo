@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모델 학습 파라미터 설정</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4; /* 배경색 변경 */
+        }
+        h1 {
+            color: #333;
+            text-align: center; /* 중앙 정렬 */
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold; /* 글씨 두껍게 */
+        }
+        input[type="text"] {
+            width: 220px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px; /* 모서리 둥글게 */
+            transition: border-color 0.3s; /* 테두리 색상 변화 */
+        }
+        input[type="text"]:focus {
+            border-color: #007bff; /* 포커스 시 테두리 색상 변경 */
+            outline: none; /* 아웃라인 제거 */
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #007bff; /* 버튼 배경색 */
+            color: white;
+            border: none;
+            border-radius: 5px; /* 모서리 둥글게 */
+            cursor: pointer; /* 마우스 포인터 변경 */
+            transition: background-color 0.3s; /* 배경색 변화 */
+        }
+        button:hover {
+            background-color: #0056b3; /* 호버 시 색상 변경 */
+        }
+        #progress-list {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fff; /* 배경색 흰색으로 변경 */
+        }
+        .progress-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            border: 1px solid #ddd; /* 테두리 추가 */
+            border-radius: 3px; /* 모서리 둥글게 */
+            background-color: #e9ecef; /* 항목 배경색 */
+        }
+    </style>
+</head>
+<body>
+    <h1>모델 학습 파라미터 설정</h1>
+    <form id="parameter-form">
+        <label for="epoch">Epoch:</label>
+        <input type="text" name="epoch" required>
+
+        <label for="batch">Batch Size:</label>
+        <input type="text" name="batch" required>
+
+        <label for="lstm_units">LSTM Units (30-100, 권장 50):</label>
+        <input type="text" name="lstm_units" required>
+
+        <label for="dropout">Dropout (0.1 ~ 0.5, 권장 0.2):</label>
+        <input type="text" name="dropout" required>
+
+        <p>EarlyStop은 기본값으로 설정되어 있습니다.</p>
+
+        <button type="submit">학습 시작</button>
+    </form>
+
+    <h2>작업 진행 중:</h2>
+    <div id="progress-list"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#parameter-form').on('submit', function(event) {
+                event.preventDefault();  // 폼 제출 방지
+                const formData = $(this).serialize();
+    
+                // 서버에 데이터 전송
+                $.ajax({
+                    url: '/process',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        console.log("AJAX 요청 성공:", response);  // 응답 확인
+                        if (response.status === 'success') {
+                            response.progress.forEach(function(message) {
+                                $('#progress-list').append('<div class="progress-item">' + message + '</div>');
+                            });
+                        } else {
+                            $('#progress-list').append('<div class="progress-item" style="color:red;">' + response.message + '</div>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX 요청 실패:", status, error);  // 오류 확인
+                        $('#progress-list').append('<div class="progress-item" style="color:red;">오류 발생: ' + xhr.responseText + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
